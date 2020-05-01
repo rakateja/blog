@@ -14,11 +14,11 @@ Dari penjelasan diatas, ketika aplikasi diakses oleh user/client, Context akan m
 
 Oke, langsung saja ke implementasinya, flow aplikasinya sebagai berikut.
 
-user request -> middleware (pengecekan user login) -> processes/ application API boundaries
+![image alt text](/middleware.png)
 
 - user request adalah request model yang dikirim oleh user/client
 - middleware(s) merupakan layer yang bertugas untuk memproses request model sebelum ditangai oleh request handler/API boundaries yang lain.
-- application API boundaries, merupakan proses yang terjadi di dalam aplikasi baik itu transport layer, domain (business logic) layer, dan bahkan database layer.
+- API boundaries, merupakan proses yang terjadi di dalam aplikasi baik itu transport layer, domain (business logic) layer, dan database layer.
 
 ### Middleware (pengecekan user login)
 Berikut middleware yang kita perlukan untuk kasus ini.
@@ -39,7 +39,7 @@ func withLoggedUser(userQuery UserQuery) func(http.Handler) http.Handler {
       }
       ctx := context.WithValue(req.Context(), "logged-user-id", user.ID)
       h.ServeHTTP(w, req.WithContext(ctx))
-      })
+    })
   }
 }
 ```
