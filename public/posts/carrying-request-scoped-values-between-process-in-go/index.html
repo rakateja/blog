@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <title>Carrying Request Scoped Values Between Process in Go with Context - Made Raka</title>
+  <meta property="og:title" content="Carrying Request Scoped Values Between Process in Go with Context - Made Raka" />
+  <meta name="twitter:title" content="Carrying Request Scoped Values Between Process in Go with Context - …" />
+  <meta name="description" content="Di artikel sebelumnya, saya menjelaskan tentang implementasi HTTP middleware di Go. Dalam praktiknya implementasi middleware juga sangat terkait dengan bagaimana kita menangani nilai yang kita hasilkan di middleware dapat di konsumsi oleh proses lain di aplikasi. Semisal saya ambil contoh implementasi secured endpoint yang hanya boleh diakses oleh user yang sudah login. Middleware yang bertugas untuk pengecekan user login juga perlu mengirim informasi user ke proses selanjutnya atau agar API boundaries yang lain bisa menerima informasi tersebut.">
+  <meta property="og:description" content="Di artikel sebelumnya, saya menjelaskan tentang implementasi HTTP middleware di Go. Dalam praktiknya implementasi middleware juga sangat terkait dengan bagaimana kita menangani nilai yang kita hasilkan di middleware dapat di konsumsi oleh proses lain di aplikasi. Semisal saya ambil contoh implementasi secured endpoint yang hanya boleh diakses oleh user yang sudah login. Middleware yang bertugas untuk pengecekan user login juga perlu mengirim informasi user ke proses selanjutnya atau agar API boundaries yang lain bisa menerima informasi tersebut.">
+  <meta name="twitter:description" content="Di artikel sebelumnya, saya menjelaskan tentang implementasi HTTP middleware di Go. Dalam praktiknya implementasi middleware juga sangat terkait dengan bagaimana kita menangani nilai yang kita …">
+  <meta name="author" content=""/>
+  <meta property="og:site_name" content="Made Raka" />
+  <meta property="og:url" content="http://example.org/posts/carrying-request-scoped-values-between-process-in-go/" />
+  <meta property="og:type" content="article" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="generator" content="Hugo 0.68.3" />
+
+  <link rel="stylesheet" href="/css/style.css" media="all" />
+  <link rel="stylesheet" href="/css/syntax.css" media="all" />
+  <link rel="stylesheet" href="/css/custom.css" media="all" />
+
+  <script src="/js/script.js"></script>
+  <script src="/js/custom.js"></script>
+  <script defer src="/js/fontawesome.js"></script>
+</head>
+
+<body>
+
+<header class="site-header">
+  <nav class="site-navi">
+    <h1 class="site-title"><a href="/">Made Raka</a></h1>
+    <ul class="site-navi-items">
+    </ul>
+  </nav>
+</header>
+<hr class="site-header-bottom">
+
+  <div class="main" role="main">
+    <article class="article">
+      
+      
+      <h1 class="article-title">Carrying Request Scoped Values Between Process in Go with Context</h1>
+      
+      <hr class="article-title-bottom">
+      <ul class="article-meta">
+        <li class="article-meta-date"><time>June 10, 2018</time></li>
+      </ul>
+      <p>Di artikel sebelumnya, saya menjelaskan tentang implementasi HTTP middleware di Go. Dalam praktiknya implementasi middleware juga sangat terkait dengan bagaimana kita menangani nilai yang kita hasilkan di middleware dapat di konsumsi oleh proses lain di aplikasi. Semisal saya ambil contoh implementasi secured endpoint yang hanya boleh diakses oleh user yang sudah login. Middleware yang bertugas untuk pengecekan user login juga perlu mengirim informasi user ke proses selanjutnya atau agar API boundaries yang lain bisa menerima informasi tersebut.</p>
+<p>Lalu bagaimana Context mampu menyelesaikan masalah diatas? Untuk memahami itu, berikut penjelasan singkat tentang Context dari dokumentasi resminya.</p>
+<blockquote>
+<p>Package context defines the Context type, which carries deadlines, cancelation signals, and other request-scoped values across API boundaries and between processes.</p>
+</blockquote>
+<p>Dari penjelasan diatas, ketika aplikasi diakses oleh user/client, Context akan membawa nilai yang berhubungan dengan siklus user request ke proses yang lain.</p>
+<h2 id="implementasi">Implementasi</h2>
+<p>Oke, langsung saja ke implementasinya, flow aplikasinya sebagai berikut.</p>
+<p><img src="/middleware.png" alt="image alt text"></p>
+<ul>
+<li>user request adalah request model yang dikirim oleh user/client</li>
+<li>middleware(s) merupakan layer yang bertugas untuk memproses request model sebelum ditangai oleh request handler/API boundaries yang lain.</li>
+<li>API boundaries, merupakan proses yang terjadi di dalam aplikasi baik itu transport layer, domain (business logic) layer, dan database layer.</li>
+</ul>
+<h3 id="middleware-pengecekan-user-login">Middleware (pengecekan user login)</h3>
+<p>Berikut middleware yang kita perlukan untuk kasus ini.</p>
+<pre><code>func withLoggedUser(userQuery UserQuery) func(http.Handler) http.Handler {
+  return func(h http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+      credKey := req.Header.Get(&quot;credential-key&quot;)
+        if credKey == &quot;&quot; {
+          w.Write([]byte(&quot;ForbiddenAccess&quot;))
+          return
+      }
+      user, err := userQuery.ResolveUserByCredential(req.Context(), credKey)
+      if err != nil {
+      	w.Write([]byte(&quot;InternalServerError&quot;))
+      	return
+      }
+      ctx := context.WithValue(req.Context(), &quot;logged-user-id&quot;, user.ID)
+      h.ServeHTTP(w, req.WithContext(ctx))
+    })
+  }
+}
+</code></pre><p>Di potongan kode diatas, ketika mengeksekusi fungsi userQuery.ResolveByCrendetial, selain melempar nilai credential key, kita juga melempar Context sebagai argumen pertama. Hal ini dilakukan agar userQuery dapat menggunakan nilai dalam Context untuk berbagai hal, misal untuk request cancellation.</p>
+<h3 id="request-handler-application-api-boundaries">Request Handler/ application API boundaries</h3>
+<pre><code>userQuery := user.NewQuery()
+
+withLoggedUserMiddleware := withLoggedUser(userQuery)
+
+reqHandler := withLoggedUserMiddleware(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+  w.Write([]byte(fmt.Sprintf(&quot;Hello %s&quot;, req.Context().Value(&quot;logged-user-id&quot;))))
+}))
+
+http.Handle(&quot;/secured-endpoint&quot;, reqHandler)
+</code></pre><h2 id="kesimpulan">Kesimpulan</h2>
+<p>Context sangat berguna untuk menangani berbagai kasus terkait request-scoped values. Dalam dokumentasi resmi-nya, Context juga bisa digunakan untuk menangani kasus request deadline serta request cancellation.</p>
+<p>Sekian artikel kali ini, apabila teman- teman ada pertanyaan, saran atau tips tentang penggunaan Context, bisa tulis di kolom komentar.</p>
+<p>Terimakasih.</p>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://golang.org/pkg/context/">https://golang.org/pkg/context/</a></li>
+<li><a href="https://blog.golang.org/context">https://blog.golang.org/context</a></li>
+<li><a href="https://dave.cheney.net/2017/08/20/context-isnt-for-cancellation">https://dave.cheney.net/2017/08/20/context-isnt-for-cancellation</a></li>
+</ul>
+
+    </article>
+
+    
+
+
+    <ul class="pager article-pager">
+      <li class="pager-newer">
+          <a href="/posts/dependency-injection-in-go/" data-toggle="tooltip" data-placement="top" title="Dependency Injection in Go">&lt; Newer</a>
+      </li>
+      <li class="pager-older">
+        <a href="/posts/http-middleware-di-go/" data-toggle="tooltip" data-placement="top" title="Http Middleware Di Go">Older &gt;</a>
+      </li>
+    </ul>
+  </div>
+
+
+<div class="site-footer">
+  <div class="copyright"></div>
+  <ul class="site-footer-items">
+  </ul>
+  <div class="powerdby">
+    Powered by <a href="https://gohugo.io/">Hugo</a> and <a href="https://github.com/taikii/whiteplain">Whiteplain</a>
+  </div>
+</div>
+
+
+</body>
+</html>
