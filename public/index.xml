@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Made Raka</title>
+    <link>http://example.org/</link>
+    <description>Recent content on Made Raka</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <copyright>&amp;copy; Copyright 2021 Made Raka</copyright>
+    <lastBuildDate>Sat, 02 Jan 2021 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="http://example.org/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Dependency Injection in Go</title>
+      <link>http://example.org/posts/dependency-injection-in-go/</link>
+      <pubDate>Fri, 07 Sep 2018 15:06:09 +0700</pubDate>
+      
+      <guid>http://example.org/posts/dependency-injection-in-go/</guid>
+      <description>Dependency Injection (DI) merupakan salah satu teknik yang cukup sederhana namun sangat powerful dalam pengembangan perangkat lunak. Teknik ini bertujuan untuk membuat unit atau komponen yang independent dan testable.
+Goals Dengan menulis artikel ini, diharapkan bisa menjawab beberapa pertanyaan berikut.
+ Bagaimana implementasi Dependency Injection di Go? Perkakas apa yang bisa digunakan untuk Dependency Injection di Go?  Case Study Kasus yang digunakan pada artikel ini adalah menambahkan daftar following pada jejaring sosial, seperti Instagram atau Twitter.</description>
+    </item>
+    
+    <item>
+      <title>Carrying Request Scoped Values Between Process in Go with Context</title>
+      <link>http://example.org/posts/carrying-request-scoped-values-between-process-in-go/</link>
+      <pubDate>Sun, 10 Jun 2018 14:58:04 +0700</pubDate>
+      
+      <guid>http://example.org/posts/carrying-request-scoped-values-between-process-in-go/</guid>
+      <description>Di artikel sebelumnya, saya menjelaskan tentang implementasi HTTP middleware di Go. Dalam praktiknya implementasi middleware juga sangat terkait dengan bagaimana kita menangani nilai yang kita hasilkan di middleware dapat di konsumsi oleh proses lain di aplikasi. Semisal saya ambil contoh implementasi secured endpoint yang hanya boleh diakses oleh user yang sudah login. Middleware yang bertugas untuk pengecekan user login juga perlu mengirim informasi user ke proses selanjutnya atau agar API boundaries yang lain bisa menerima informasi tersebut.</description>
+    </item>
+    
+    <item>
+      <title>Http Middleware Di Go</title>
+      <link>http://example.org/posts/http-middleware-di-go/</link>
+      <pubDate>Sun, 10 Jun 2018 14:28:00 +0700</pubDate>
+      
+      <guid>http://example.org/posts/http-middleware-di-go/</guid>
+      <description>Dalam konteks pembuatan aplikasi web, kita sering dihadapkan oleh berbagai kasus yang sebenarnya tidak berhubungan langsung dengan masalah bisnis yang ingin diselesaikan. Semisal, ketika membuat web untuk menerima order barang, kita perlu melakukan berbagai tugas sebelum order barang tersebut dikerjakan. Contoh paling sederhana, pengecekan hak akses, yaitu pembuatan order hanya boleh dilakukan oleh pihak yang memiliki akses. Dalam menyelesaikan masalah tersebut, kita bisa menggunakan pola atau teknik http middleware.
+Middleware merupakan sebuah sebuah layer tambahan sebelum http request dikerjakan oleh action handler atau request handler yang dituju.</description>
+    </item>
+    
+    <item>
+      <title>Dasar Dependency Injection</title>
+      <link>http://example.org/posts/dasar-dependency-injection/</link>
+      <pubDate>Tue, 25 Apr 2017 13:52:08 +0700</pubDate>
+      
+      <guid>http://example.org/posts/dasar-dependency-injection/</guid>
+      <description>Mungkin ini termasuk topik yang agak membosankan di bidang pengembangan perangkat lunak. Tapi menurut saya gak ada salahnya untuk bahas topik ini, semoga dapat berguna di masa depan. Di artikel ini, saya tidak akan menggunakan perkakas tambahan apapun, sehingga diharapkan setiap orang dapat memahami konsep dasarnya dengan mudah.
+Apa itu Dependency Injection (DI)? Sederhananya, Dependency Injection merupakan sebuah teknik untuk mengatur cara bagaimana suatu objek dibentuk ketika terdapat objek lain yang membutuhkan.</description>
+    </item>
+    
+  </channel>
+</rss>
