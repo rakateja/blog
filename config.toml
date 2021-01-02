@@ -2,3 +2,15 @@ baseURL = "http://example.org/"
 languageCode = "en-us"
 title = "Made Raka"
 theme = "whiteplain"
+
+[[menu.main]]
+  name = "Books"
+  identifier = "books"
+  url = "/books/"
+  weight = 4
+
+[[menu.main]]
+  name = "About"
+  identifier = "about"
+  url = "/about/"
+  weight = 4
