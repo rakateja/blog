@@ -1,8 +1,13 @@
-baseURL = "http://example.org/"
+baseURL = "https://raka.dev/"
 languageCode = "en-us"
 title = "Made Raka"
 theme = "whiteplain"
 copyright = "&copy; Copyright 2017 Made Raka"
+
+[params]
+  description = "Made Raka's personal blog — software engineering articles on Go, Kubernetes, software architecture, and design patterns."
+  author = { name = "Made Raka" }
+  twitter = "rakateja"
 
 [[menu.main]]
   name = "Books"

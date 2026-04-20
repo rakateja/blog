@@ -2,6 +2,8 @@
 title: "Separation of Concerns through Layered Design"
 date: 2022-04-13T00:00:00+07:00
 draft: false
+description: "Learn how Separation of Concerns through layered design reduces cognitive load and enables unit testing, with practical Go code examples across presentation, domain, and persistence layers."
+keywords: ["separation of concerns", "layered design", "software architecture", "golang", "domain layer", "persistence layer", "presentation layer", "unit testing", "clean architecture"]
 ---
 
 ## Introduction

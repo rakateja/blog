@@ -1,63 +1,192 @@
-<!doctype html><html lang=en-us><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1"><title>Separation of Concerns through Layered Design - Made Raka</title>
-<meta property="og:title" content="Separation of Concerns through Layered Design - Made Raka"><meta name=twitter:title content="Separation of Concerns through Layered Design - Made Raka"><meta name=description content="Introduction
-One of the well-known practices in software engineering when building information rich applications is layering it into different layers based on its concerns. I have seen many folks recommending this practice in many discussions, i.e blogpost, twitter discussion, linkedin post, etc. In this post, I&rsquo;ll try to rephrase it with more details.
-Before going deep into detail of this principles, let&rsquo;s define what&rsquo;s problem we&rsquo;re going to solve with this principle. Here&rsquo;s some problems that we&rsquo;re trying to solve with this principle in mind."><meta property="og:description" content="Introduction
-One of the well-known practices in software engineering when building information rich applications is layering it into different layers based on its concerns. I have seen many folks recommending this practice in many discussions, i.e blogpost, twitter discussion, linkedin post, etc. In this post, I&rsquo;ll try to rephrase it with more details.
-Before going deep into detail of this principles, let&rsquo;s define what&rsquo;s problem we&rsquo;re going to solve with this principle. Here&rsquo;s some problems that we&rsquo;re trying to solve with this principle in mind."><meta name=twitter:description content="Introduction
-One of the well-known practices in software engineering when building information rich applications is layering it into different layers based on its concerns. I have seen many folks …"><meta name=author content><meta property="og:site_name" content="Made Raka"><meta property="og:url" content="http://example.org/posts/separation-of-concerns/"><meta property="og:type" content="article"><meta name=twitter:card content="summary"><meta name=generator content="Hugo 0.147.0"><link rel=stylesheet href=/css/style.css media=all><link rel=stylesheet href=/css/syntax.css media=all><link rel=stylesheet href=/css/custom.css media=all><script src=/js/script.js></script><script src=/js/custom.js></script><script defer src=/js/fontawesome.js></script></head><body><header class=site-header><nav class=site-navi><h1 class=site-title><a href=/>Made Raka</a></h1><ul class=site-navi-items><li class=site-navi-item-books><a href=/books/ title=Books>Books</a></li><li class=site-navi-item-about><a href=/about/ title=About>About</a></li></ul></nav></header><hr class=site-header-bottom><div class=main role=main><article class=article><h1 class=article-title>Separation of Concerns through Layered Design</h1><hr class=article-title-bottom><ul class=article-meta><li class=article-meta-date><time>April 13, 2022</time></li></ul><h2 id=introduction>Introduction</h2><p>One of the well-known practices in software engineering when building information rich applications is layering it into different layers based on its concerns. I have seen many folks recommending this practice in many discussions, i.e blogpost, twitter discussion, linkedin post, etc. In this post, I&rsquo;ll try to rephrase it with more details.</p><p>Before going deep into detail of this principles, let&rsquo;s define what&rsquo;s problem we&rsquo;re going to solve with this principle. Here&rsquo;s some problems that we&rsquo;re trying to solve with this principle in mind.</p><p>Testing is becoming hard & costly when the components are tighly coupled, the reason that testing is becoming costly & hard because when we want to test specific logic, the test also need to againts all layers or components.</p><p>Developer need to pull information from multiple aspects to understand and enhance the systems,</p><p>To solve or to reduce the problems above, we can adopt Separation of Concerns principle. Here are some benefits of separation of concerns.</p><p>Reducing cognitive load needed in understanding the systems</p><p>Enable us to test the core (or specific) part with low effort</p><h2 id=reducing-cognitive-load>Reducing cognitive load</h2><p>Before going into it, let&rsquo;s familiarize with what is &ldquo;Cognitive Load&rdquo;. &ldquo;Cognitive Load&rdquo; relates to the amount of information that working memory can hold at a time. In this context, it can relates to how much variant of information we need to know in order to complete the task. The risk of a higher cognitive load is we can easily create bugs because we may miss some required information in order to complete the task.</p><p>For example, when developing feature where its software components are not separated nicely, we tend to look at all layers. We have to pull all information from all layers and combine them in order to complete the feature. Beside of it is error-prone, it also has maintainance cost because we have to put all informations everytime there&rsquo;s task related to it.</p><h2 id=enable-unit-testing>Enable unit testing</h2><p>As we defined above, another benefit of this principles is enabling us to achieve lower effort of testing. For example, when we want to test the business logic of the software systems, we can do it without dealing with how we store the data in the database.</p><h2 id=high-level-design>High level design</h2><p><img src=/separation-of-concerns/basic-landscape.png alt="image alt text"></p><p>In the diagram above, we split the software systems into 3 layers, presentation layer, business logic or domain layer, and persistence layer.</p><p>Presentation layer, is the layer which handles request from client, process it using other layer, and send the response back to the client.</p><p>Business logic or domain layer, is the layer which handles the core of the domain logic</p><p>Persistence layer, is the layer which responsible to storing & retrieving data from data storage.</p><p>In some cases, where the domain is a bit complex we also can split the business logic into 2 distinct components, service and domain objects where we can place the business logic in service or domain objects.</p><ul><li>service</li><li>domain objects</li></ul><p>Here&rsquo;s the diagram for implementing the service & domain objects.</p><p><img src=/separation-of-concerns/service-domain-objects-landscape.png alt="image alt text"></p><h2 id=low-level-implementation>Low-level implementation</h2><p>To demonstrate the low-level implemenation of this principle, I&rsquo;ll try write some code snippet. Let&rsquo;s take the case of food delivery order submission. The requirement we need to cater here is calculating order total amount based on its items.</p><p><strong>Pesistence Layer</strong></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>OrderRepository</span> <span style=color:#66d9ef>interface</span> {
-</span></span><span style=display:flex><span>    <span style=color:#a6e22e>StoreOrder</span>(<span style=color:#a6e22e>order</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>Order</span>) (<span style=color:#f92672>*</span><span style=color:#a6e22e>Order</span>, <span style=color:#66d9ef>error</span>)
-</span></span><span style=display:flex><span>    <span style=color:#a6e22e>FindByID</span>(<span style=color:#a6e22e>orderID</span> <span style=color:#66d9ef>string</span>) (<span style=color:#f92672>*</span><span style=color:#a6e22e>Order</span>, <span style=color:#66d9ef>error</span>)
-</span></span><span style=display:flex><span>}
-</span></span></code></pre></div><p>As the persistence only responsible to storing & retrieving data in data storage, the function signature also only express those responsibilities.</p><p><strong>Business logic layer (domain objects)</strong></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Order</span> <span style=color:#66d9ef>struct</span> {
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>ID</span>       <span style=color:#66d9ef>int</span>         <span style=color:#e6db74>`json:&#34;id&#34;`</span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>Subtotal</span> <span style=color:#66d9ef>int</span>         <span style=color:#e6db74>`json:&#34;subTotal&#34;`</span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>Total</span>    <span style=color:#66d9ef>int</span>         <span style=color:#e6db74>`json:&#34;total&#34;`</span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>Items</span>    []<span style=color:#a6e22e>OrderItem</span> <span style=color:#e6db74>`json:&#34;items&#34;`</span>
-</span></span><span style=display:flex><span>}
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>OrderItem</span> <span style=color:#66d9ef>struct</span> {
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>ID</span>        <span style=color:#66d9ef>int</span> <span style=color:#e6db74>`json:&#34;id&#34;`</span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>ProductID</span> <span style=color:#66d9ef>int</span> <span style=color:#e6db74>`json:&#34;productId&#34;`</span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>Price</span>     <span style=color:#66d9ef>int</span> <span style=color:#e6db74>`json:&#34;price&#34;`</span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>Qty</span>       <span style=color:#66d9ef>int</span> <span style=color:#e6db74>`json:&#34;qty&#34;`</span>
-</span></span><span style=display:flex><span>}
-</span></span><span style=display:flex><span>
-</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>o</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>Order</span>) <span style=color:#a6e22e>AddItem</span>(<span style=color:#a6e22e>productID</span> <span style=color:#66d9ef>int</span>, <span style=color:#a6e22e>price</span> <span style=color:#66d9ef>int</span>) <span style=color:#66d9ef>error</span> {
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>m</span> <span style=color:#f92672>:=</span> make(<span style=color:#66d9ef>map</span>[<span style=color:#66d9ef>int</span>]<span style=color:#a6e22e>OrderItem</span>, <span style=color:#ae81ff>0</span>)
-</span></span><span style=display:flex><span>	<span style=color:#66d9ef>for</span> <span style=color:#a6e22e>_</span>, <span style=color:#a6e22e>item</span> <span style=color:#f92672>:=</span> <span style=color:#66d9ef>range</span> <span style=color:#a6e22e>o</span>.<span style=color:#a6e22e>Items</span> {
-</span></span><span style=display:flex><span>		<span style=color:#a6e22e>m</span>[<span style=color:#a6e22e>item</span>.<span style=color:#a6e22e>ProductID</span>] = <span style=color:#a6e22e>item</span>
-</span></span><span style=display:flex><span>	}
-</span></span><span style=display:flex><span>    <span style=color:#75715e>// Update qty if the productID have been registered</span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>exist</span>, <span style=color:#a6e22e>item</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>m</span>[<span style=color:#a6e22e>productID</span>]
-</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>exist</span> {
-</span></span><span style=display:flex><span>		<span style=color:#a6e22e>item</span>.<span style=color:#a6e22e>Qty</span> <span style=color:#f92672>+=</span> <span style=color:#ae81ff>1</span>
-</span></span><span style=display:flex><span>		<span style=color:#a6e22e>m</span>[<span style=color:#a6e22e>productID</span>] = <span style=color:#a6e22e>item</span>
-</span></span><span style=display:flex><span>	}
-</span></span><span style=display:flex><span>    <span style=color:#75715e>// Calculate subtotal based on product price &amp; quantity</span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>o</span>.<span style=color:#a6e22e>Items</span> = make([]<span style=color:#a6e22e>OrderItem</span>, <span style=color:#ae81ff>0</span>)
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>subTotal</span> <span style=color:#f92672>:=</span> <span style=color:#ae81ff>0</span>
-</span></span><span style=display:flex><span>	<span style=color:#66d9ef>for</span> <span style=color:#a6e22e>_</span>, <span style=color:#a6e22e>item</span> <span style=color:#f92672>:=</span> <span style=color:#66d9ef>range</span> <span style=color:#a6e22e>o</span>.<span style=color:#a6e22e>Items</span> {
-</span></span><span style=display:flex><span>		<span style=color:#a6e22e>o</span>.<span style=color:#a6e22e>Items</span> = append(<span style=color:#a6e22e>o</span>.<span style=color:#a6e22e>Items</span>, <span style=color:#a6e22e>item</span>)
-</span></span><span style=display:flex><span>		<span style=color:#a6e22e>subTotal</span> <span style=color:#f92672>+=</span> (<span style=color:#a6e22e>item</span>.<span style=color:#a6e22e>Price</span> <span style=color:#f92672>*</span> <span style=color:#a6e22e>item</span>.<span style=color:#a6e22e>Qty</span>)
-</span></span><span style=display:flex><span>	}
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>o</span>.<span style=color:#a6e22e>Total</span> = <span style=color:#a6e22e>subTotal</span>
-</span></span><span style=display:flex><span>	<span style=color:#a6e22e>o</span>.<span style=color:#a6e22e>SubTotal</span> = <span style=color:#a6e22e>subTotal</span>
-</span></span><span style=display:flex><span>	<span style=color:#66d9ef>return</span> <span style=color:#66d9ef>nil</span>
-</span></span><span style=display:flex><span>}
-</span></span></code></pre></div><p><strong>Business logic layer (service)</strong></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#66d9ef>func</span> (<span style=color:#a6e22e>o</span> <span style=color:#a6e22e>OrderService</span>) <span style=color:#a6e22e>AddItem</span>(<span style=color:#a6e22e>orderID</span> <span style=color:#66d9ef>int</span>, <span style=color:#a6e22e>input</span> <span style=color:#a6e22e>AddItemInput</span>) (<span style=color:#f92672>*</span><span style=color:#a6e22e>Order</span>, <span style=color:#66d9ef>error</span>) {
-</span></span><span style=display:flex><span>    <span style=color:#a6e22e>order</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>o</span>.<span style=color:#a6e22e>repository</span>.<span style=color:#a6e22e>FindByID</span>(<span style=color:#a6e22e>order</span>.<span style=color:#a6e22e>ID</span>)
-</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
-</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>nil</span>, <span style=color:#a6e22e>err</span>
-</span></span><span style=display:flex><span>    }
-</span></span><span style=display:flex><span>    <span style=color:#a6e22e>price</span> <span style=color:#f92672>:=</span> <span style=color:#ae81ff>90000</span> <span style=color:#75715e>// Dummy price</span>
-</span></span><span style=display:flex><span>    <span style=color:#a6e22e>err</span> = <span style=color:#a6e22e>order</span>.<span style=color:#a6e22e>AddItem</span>(<span style=color:#a6e22e>input</span>.<span style=color:#a6e22e>ProductID</span>, <span style=color:#a6e22e>price</span>)
-</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
-</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>nil</span>, <span style=color:#a6e22e>err</span>
-</span></span><span style=display:flex><span>    }
-</span></span><span style=display:flex><span>    <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>o</span>.<span style=color:#a6e22e>repository</span>.<span style=color:#a6e22e>StoreOrder</span>(<span style=color:#a6e22e>order</span>)
-</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
-</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>nil</span>, <span style=color:#a6e22e>err</span>
-</span></span><span style=display:flex><span>    }
-</span></span><span style=display:flex><span>    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>order</span>, <span style=color:#66d9ef>nil</span> 
-</span></span><span style=display:flex><span>}
-</span></span></code></pre></div><p>As you can see above, the logic of how to add new product into Order is fully implemented in domain objects, not in service layer. In service layer only handle the integration with other layers (persistence layer) and the domain logic.</p><h2 id=challenges>Challenges</h2><p>There are some challenges or things to be considered in implementing this principle in real world application as this will be anti-pattern if we try to implement this blindly without considering the context of our case.</p><p>How to adopt this principle in more complex system where it involves multiple domain models?</p><p>How to implement this principle when the system need to handle logic that&rsquo;s not really related to domain itself?</p><p>To discuss the challenges above in more detail, I&rsquo;ll try elaborate it one by one.</p><p><strong>Challenge #1</strong></p><p>As the application grows, the application becomes more complex, it will manage multiple domain models most of the cases. In this state, it&rsquo;s better to revisit our design and implementation by spliting the design logically into separated modules. The Separation of Concern principles can be implemented in each modules. So each module manage its own persistence & business logic layers, or even the persistence layer. Here is the diagram of this design for mitigating this challenge.</p><p><img src=/separation-of-concerns/multiple-namespace.png alt="image alt text"></p><p><strong>Challenge #2</strong></p><p>For this challenge, we can place the logics outside of our domain logic layers if that&rsquo;s not really related to our business domains or we partition the service layer into distinct components. Here are some examples of logics that may not be considered in our business domains.</p><p>A logic to compose notification content</p><p>A logic to handle specific use-case in presentation layer.</p><p>etc</p><p>But if we can have less components for the service layers, do it.</p><h2 id=conclusion>Conclusion</h2><p>In this articles we have addressed some challenge that may be happened the implementation of this principles and also have demonstrated in how to place the domain logics in the domain objects and did its integration in the service layer.</p><h2 id=references>References</h2><ul><li>[Cognitive Load] <a href=https://www.mindtools.com/pages/article/cognitive-load-theory.htm>https://www.mindtools.com/pages/article/cognitive-load-theory.htm</a></li><li>[PresentationDomainDataLayering] <a href=https://martinfowler.com/bliki/PresentationDomainDataLayering.html>https://martinfowler.com/bliki/PresentationDomainDataLayering.html</a></li></ul></article><ul class="pager article-pager"><li class="pager-newer pager-noitem">&lt; Newer</li><li class=pager-older><a href=/posts/deploying-go-app-on-minikube-using-local-docker-image/ data-toggle=tooltip data-placement=top title="Deploying Go App on Minikube Using Local Docker Image">Older ></a></li></ul></div><div class=site-footer><div class=copyright>&copy; Copyright 2017 Made Raka</div><ul class=site-footer-items></ul><div class=powerdby>Powered by <a href=https://gohugo.io/>Hugo</a> and <a href=https://github.com/taikii/whiteplain>Whiteplain</a></div></div></body></html>
+<!DOCTYPE html>
+<html lang="en-us">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <title>Separation of Concerns through Layered Design - Made Raka</title>
+  <meta property="og:title" content="Separation of Concerns through Layered Design - Made Raka" />
+  <meta name="twitter:title" content="Separation of Concerns through Layered Design - Made Raka" />
+  <meta name="description" content="Learn how Separation of Concerns through layered design reduces cognitive load and enables unit testing, with practical Go code examples across presentation, domain, and persistence layers.">
+  <meta property="og:description" content="Learn how Separation of Concerns through layered design reduces cognitive load and enables unit testing, with practical Go code examples across presentation, domain, and persistence layers.">
+  <meta name="twitter:description" content="Learn how Separation of Concerns through layered design reduces cognitive load and enables unit testing, with practical Go code examples across presentation, domain, and persistence layers.">
+  <meta name="author" content="Made Raka"/>
+  <meta property="og:site_name" content="Made Raka" />
+  <meta property="og:url" content="http://localhost:1313/posts/separation-of-concerns/" />
+  <meta property="og:type" content="article" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:site" content="@rakateja" />
+  <meta name="twitter:creator" content="@rakateja" />
+  <meta name="generator" content="Hugo 0.147.0">
+<meta name="keywords" content="separation of concerns, layered design, software architecture, golang, domain layer, persistence layer, presentation layer, unit testing, clean architecture">
+<link rel="canonical" href="http://localhost:1313/posts/separation-of-concerns/">
+
+
+  <link rel="stylesheet" href="/css/style.css" media="all" />
+  <link rel="stylesheet" href="/css/syntax.css" media="all" />
+  <link rel="stylesheet" href="/css/custom.css" media="all" />
+
+  <script src="/js/script.js"></script>
+  <script src="/js/custom.js"></script>
+  <script defer src="/js/fontawesome.js"></script>
+</head>
+
+<body>
+
+<header class="site-header">
+  <nav class="site-navi">
+    <h1 class="site-title"><a href="/">Made Raka</a></h1>
+    <ul class="site-navi-items">
+      <li class="site-navi-item-books"><a href="/books/" title="Books">Books</a></li>
+      <li class="site-navi-item-about"><a href="/about/" title="About">About</a></li>
+    </ul>
+  </nav>
+</header>
+<hr class="site-header-bottom">
+
+  <div class="main" role="main">
+    <article class="article">
+      
+      
+      <h1 class="article-title">Separation of Concerns through Layered Design</h1>
+      
+      <hr class="article-title-bottom">
+      <ul class="article-meta">
+        <li class="article-meta-date"><time>April 13, 2022</time></li>
+      </ul>
+      <h2 id="introduction">Introduction</h2>
+<p>One of the well-known practices in software engineering when building information rich applications is layering it into different layers based on its concerns. I have seen many folks recommending this practice in many discussions, i.e blogpost, twitter discussion, linkedin post, etc. In this post, I&rsquo;ll try to rephrase it with more details.</p>
+<p>Before going deep into detail of this principles, let&rsquo;s define what&rsquo;s problem we&rsquo;re going to solve with this principle. Here&rsquo;s some problems that we&rsquo;re trying to solve with this principle in mind.</p>
+<p>Testing is becoming hard &amp; costly when the components are tighly coupled, the reason that testing is becoming costly &amp; hard because when we want to test specific logic, the test also need to againts all layers or components.</p>
+<p>Developer need to pull information from multiple aspects to understand and enhance the systems,</p>
+<p>To solve or to reduce the problems above, we can adopt Separation of Concerns principle. Here are some benefits of separation of concerns.</p>
+<p>Reducing cognitive load needed in understanding the systems</p>
+<p>Enable us to test the core (or specific) part with low effort</p>
+<h2 id="reducing-cognitive-load">Reducing cognitive load</h2>
+<p>Before going into it, let&rsquo;s familiarize with what is &ldquo;Cognitive Load&rdquo;. &ldquo;Cognitive Load&rdquo; relates to the amount of information that working memory can hold at a time. In this context, it can relates to how much variant of information we need to know in order to complete the task. The risk of a higher cognitive load is we can easily create bugs because we may miss some required information in order to complete the task.</p>
+<p>For example, when developing feature where its software components are not separated nicely, we tend to look at all layers. We have to pull all information from all layers and combine them in order to complete the feature. Beside of it is error-prone, it also has maintainance cost because we have to put all informations everytime there&rsquo;s task related to it.</p>
+<h2 id="enable-unit-testing">Enable unit testing</h2>
+<p>As we defined above, another benefit of this principles is enabling us to achieve lower effort of testing. For example, when we want to test the business logic of the software systems, we can do it without dealing with how we store the data in the database.</p>
+<h2 id="high-level-design">High level design</h2>
+<p><img src="/separation-of-concerns/basic-landscape.png" alt="image alt text"></p>
+<p>In the diagram above, we split the software systems into 3 layers, presentation layer, business logic or domain layer, and persistence layer.</p>
+<p>Presentation layer, is the layer which handles request from client, process it using other layer, and send the response back to the client.</p>
+<p>Business logic or domain layer, is the layer which handles the core of the domain logic</p>
+<p>Persistence layer, is the layer which responsible to storing &amp; retrieving data from data storage.</p>
+<p>In some cases, where the domain is a bit complex we also can split the business logic into 2 distinct components, service and domain objects where we can place the business logic in service or domain objects.</p>
+<ul>
+<li>service</li>
+<li>domain objects</li>
+</ul>
+<p>Here&rsquo;s the diagram for implementing the service &amp; domain objects.</p>
+<p><img src="/separation-of-concerns/service-domain-objects-landscape.png" alt="image alt text"></p>
+<h2 id="low-level-implementation">Low-level implementation</h2>
+<p>To demonstrate the low-level implemenation of this principle, I&rsquo;ll try write some code snippet. Let&rsquo;s take the case of food delivery order submission. The requirement we need to cater here is calculating order total amount based on its items.</p>
+<p><strong>Pesistence Layer</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">OrderRepository</span> <span style="color:#66d9ef">interface</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">StoreOrder</span>(<span style="color:#a6e22e">order</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Order</span>) (<span style="color:#f92672">*</span><span style="color:#a6e22e">Order</span>, <span style="color:#66d9ef">error</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">FindByID</span>(<span style="color:#a6e22e">orderID</span> <span style="color:#66d9ef">string</span>) (<span style="color:#f92672">*</span><span style="color:#a6e22e">Order</span>, <span style="color:#66d9ef">error</span>)
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>As the persistence only responsible to storing &amp; retrieving data in data storage, the function signature also only express those responsibilities.</p>
+<p><strong>Business logic layer (domain objects)</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Order</span> <span style="color:#66d9ef">struct</span> {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">ID</span>       <span style="color:#66d9ef">int</span>         <span style="color:#e6db74">`json:&#34;id&#34;`</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">Subtotal</span> <span style="color:#66d9ef">int</span>         <span style="color:#e6db74">`json:&#34;subTotal&#34;`</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">Total</span>    <span style="color:#66d9ef">int</span>         <span style="color:#e6db74">`json:&#34;total&#34;`</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">Items</span>    []<span style="color:#a6e22e">OrderItem</span> <span style="color:#e6db74">`json:&#34;items&#34;`</span>
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">type</span> <span style="color:#a6e22e">OrderItem</span> <span style="color:#66d9ef">struct</span> {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">ID</span>        <span style="color:#66d9ef">int</span> <span style="color:#e6db74">`json:&#34;id&#34;`</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">ProductID</span> <span style="color:#66d9ef">int</span> <span style="color:#e6db74">`json:&#34;productId&#34;`</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">Price</span>     <span style="color:#66d9ef">int</span> <span style="color:#e6db74">`json:&#34;price&#34;`</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">Qty</span>       <span style="color:#66d9ef">int</span> <span style="color:#e6db74">`json:&#34;qty&#34;`</span>
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">o</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">Order</span>) <span style="color:#a6e22e">AddItem</span>(<span style="color:#a6e22e">productID</span> <span style="color:#66d9ef">int</span>, <span style="color:#a6e22e">price</span> <span style="color:#66d9ef">int</span>) <span style="color:#66d9ef">error</span> {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">m</span> <span style="color:#f92672">:=</span> make(<span style="color:#66d9ef">map</span>[<span style="color:#66d9ef">int</span>]<span style="color:#a6e22e">OrderItem</span>, <span style="color:#ae81ff">0</span>)
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">for</span> <span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">item</span> <span style="color:#f92672">:=</span> <span style="color:#66d9ef">range</span> <span style="color:#a6e22e">o</span>.<span style="color:#a6e22e">Items</span> {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">m</span>[<span style="color:#a6e22e">item</span>.<span style="color:#a6e22e">ProductID</span>] = <span style="color:#a6e22e">item</span>
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Update qty if the productID have been registered</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">exist</span>, <span style="color:#a6e22e">item</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">m</span>[<span style="color:#a6e22e">productID</span>]
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> <span style="color:#a6e22e">exist</span> {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">item</span>.<span style="color:#a6e22e">Qty</span> <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">m</span>[<span style="color:#a6e22e">productID</span>] = <span style="color:#a6e22e">item</span>
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Calculate subtotal based on product price &amp; quantity</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">o</span>.<span style="color:#a6e22e">Items</span> = make([]<span style="color:#a6e22e">OrderItem</span>, <span style="color:#ae81ff">0</span>)
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">subTotal</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">for</span> <span style="color:#a6e22e">_</span>, <span style="color:#a6e22e">item</span> <span style="color:#f92672">:=</span> <span style="color:#66d9ef">range</span> <span style="color:#a6e22e">o</span>.<span style="color:#a6e22e">Items</span> {
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">o</span>.<span style="color:#a6e22e">Items</span> = append(<span style="color:#a6e22e">o</span>.<span style="color:#a6e22e">Items</span>, <span style="color:#a6e22e">item</span>)
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">subTotal</span> <span style="color:#f92672">+=</span> (<span style="color:#a6e22e">item</span>.<span style="color:#a6e22e">Price</span> <span style="color:#f92672">*</span> <span style="color:#a6e22e">item</span>.<span style="color:#a6e22e">Qty</span>)
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">o</span>.<span style="color:#a6e22e">Total</span> = <span style="color:#a6e22e">subTotal</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">o</span>.<span style="color:#a6e22e">SubTotal</span> = <span style="color:#a6e22e">subTotal</span>
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p><strong>Business logic layer (service)</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#66d9ef">func</span> (<span style="color:#a6e22e">o</span> <span style="color:#a6e22e">OrderService</span>) <span style="color:#a6e22e">AddItem</span>(<span style="color:#a6e22e">orderID</span> <span style="color:#66d9ef">int</span>, <span style="color:#a6e22e">input</span> <span style="color:#a6e22e">AddItemInput</span>) (<span style="color:#f92672">*</span><span style="color:#a6e22e">Order</span>, <span style="color:#66d9ef">error</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">order</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">o</span>.<span style="color:#a6e22e">repository</span>.<span style="color:#a6e22e">FindByID</span>(<span style="color:#a6e22e">order</span>.<span style="color:#a6e22e">ID</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>, <span style="color:#a6e22e">err</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">price</span> <span style="color:#f92672">:=</span> <span style="color:#ae81ff">90000</span> <span style="color:#75715e">// Dummy price</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">err</span> = <span style="color:#a6e22e">order</span>.<span style="color:#a6e22e">AddItem</span>(<span style="color:#a6e22e">input</span>.<span style="color:#a6e22e">ProductID</span>, <span style="color:#a6e22e">price</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>, <span style="color:#a6e22e">err</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">o</span>.<span style="color:#a6e22e">repository</span>.<span style="color:#a6e22e">StoreOrder</span>(<span style="color:#a6e22e">order</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> <span style="color:#a6e22e">err</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">nil</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">nil</span>, <span style="color:#a6e22e">err</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">order</span>, <span style="color:#66d9ef">nil</span> 
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>As you can see above, the logic of how to add new product into Order is fully implemented in domain objects, not in service layer. In service layer only handle the integration with other layers (persistence layer) and the domain logic.</p>
+<h2 id="challenges">Challenges</h2>
+<p>There are some challenges or things to be considered in implementing this principle in real world application as this will be anti-pattern if we try to implement this blindly without considering the context of our case.</p>
+<p>How to adopt this principle in more complex system where it involves multiple domain models?</p>
+<p>How to implement this principle when the system need to handle logic that&rsquo;s not really related to domain itself?</p>
+<p>To discuss the challenges above in more detail, I&rsquo;ll try elaborate it one by one.</p>
+<p><strong>Challenge #1</strong></p>
+<p>As the application grows, the application becomes more complex, it will manage multiple domain models most of the cases. In this state, it&rsquo;s better to revisit our design and implementation by spliting the design logically into separated modules. The Separation of Concern principles can be implemented in each modules. So each module manage its own persistence &amp; business logic layers, or even the persistence layer. Here is the diagram of this design for mitigating this challenge.</p>
+<p><img src="/separation-of-concerns/multiple-namespace.png" alt="image alt text"></p>
+<p><strong>Challenge #2</strong></p>
+<p>For this challenge, we can place the logics outside of our domain logic layers if that&rsquo;s not really related to our business domains or we partition the service layer into distinct components. Here are some examples of logics that may not be considered in our business domains.</p>
+<p>A logic to compose notification content</p>
+<p>A logic to handle specific use-case in presentation layer.</p>
+<p>etc</p>
+<p>But if we can have less components for the service layers, do it.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>In this articles we have addressed some challenge that may be happened the implementation of this principles and also have demonstrated in how to place the domain logics in the domain objects and did its integration in the service layer.</p>
+<h2 id="references">References</h2>
+<ul>
+<li>[Cognitive Load] <a href="https://www.mindtools.com/pages/article/cognitive-load-theory.htm">https://www.mindtools.com/pages/article/cognitive-load-theory.htm</a></li>
+<li>[PresentationDomainDataLayering] <a href="https://martinfowler.com/bliki/PresentationDomainDataLayering.html">https://martinfowler.com/bliki/PresentationDomainDataLayering.html</a></li>
+</ul>
+
+    </article>
+
+    
+
+
+    <ul class="pager article-pager">
+      <li class="pager-newer pager-noitem">&lt; Newer</li>
+      <li class="pager-older">
+        <a href="/posts/deploying-go-app-on-minikube-using-local-docker-image/" data-toggle="tooltip" data-placement="top" title="Deploying Go App on Minikube Using Local Docker Image">Older &gt;</a>
+      </li>
+    </ul>
+  </div>
+
+
+<div class="site-footer">
+  <div class="copyright">&copy; Copyright 2017 Made Raka</div>
+  <ul class="site-footer-items">
+  </ul>
+  <div class="powerdby">
+    Powered by <a href="https://gohugo.io/">Hugo</a> and <a href="https://github.com/taikii/whiteplain">Whiteplain</a>
+  </div>
+</div>
+
+
+</body>
+</html>

@@ -2,6 +2,8 @@
 title: "Dependency Injection in Go"
 date: 2018-09-07T15:06:09+07:00
 draft: false
+description: "Panduan implementasi Dependency Injection di Go dengan contoh kode lengkap — dari pendekatan sederhana hingga penggunaan interface, mock repository, dan unit testing."
+keywords: ["dependency injection", "golang", "go", "interface", "unit testing", "mock", "software design", "DI pattern"]
 ---
 Dependency Injection (DI) merupakan salah satu teknik yang cukup sederhana namun sangat powerful dalam pengembangan perangkat lunak. Teknik ini bertujuan untuk membuat unit atau komponen yang independent dan testable.
 

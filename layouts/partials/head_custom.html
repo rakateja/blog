@@ -1,0 +1,11 @@
+{{- with .Params.keywords }}
+<meta name="keywords" content="{{ delimit . ", " }}">
+{{- end }}
+{{- with .Site.Params.description }}
+{{- if $.IsHome }}
+<meta name="description" content="{{ . }}">
+<meta property="og:description" content="{{ . }}">
+<meta name="twitter:description" content="{{ . }}">
+{{- end }}
+{{- end }}
+<link rel="canonical" href="{{ .Permalink | absURL }}">

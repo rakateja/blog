@@ -2,6 +2,8 @@
 title: "Deploying Go App on Minikube Using Local Docker Image"
 date: 2019-12-08T00:00:00+07:00
 draft: false
+description: "Step-by-step guide to deploying a Go application on Minikube using a locally-built Docker image, covering Dockerfile multi-stage build, Kubernetes deployment YAML, and kubectl commands."
+keywords: ["golang", "go", "minikube", "kubernetes", "docker", "local docker image", "kubectl", "deployment", "container"]
 ---
 
 In this post I will guide you how to running local Docker Image on Minikube, a Virtual Machine which runs a single-node Kubernetes cluster locally. To go thru this post, I expect you already have Docker, kubectl and Minikube installed in local environment.

@@ -2,6 +2,8 @@
 title: "Dasar Dependency Injection"
 date: 2017-04-25T13:52:08+07:00
 draft: false
+description: "Panduan lengkap konsep dasar Dependency Injection (DI) dalam pengembangan perangkat lunak — pengertian, manfaat, dan contoh implementasi tanpa framework tambahan."
+keywords: ["dependency injection", "DI", "software engineering", "design pattern", "unit testing", "pemrograman", "software architecture"]
 ---
 Mungkin ini termasuk topik yang agak membosankan di bidang pengembangan perangkat lunak. Tapi menurut saya gak ada salahnya untuk bahas topik ini, semoga dapat berguna di masa depan. Di artikel ini, saya tidak akan menggunakan perkakas tambahan apapun, sehingga diharapkan setiap orang dapat memahami konsep dasarnya dengan mudah.
 

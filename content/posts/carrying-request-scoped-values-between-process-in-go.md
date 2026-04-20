@@ -2,6 +2,8 @@
 title: "Carrying Request Scoped Values Between Process in Go with Context"
 date: 2018-06-10T14:58:04+07:00
 draft: false
+description: "Pelajari cara menggunakan Go Context untuk membawa request-scoped values antar proses dan API boundaries dalam aplikasi Go, termasuk implementasi middleware autentikasi dan request cancellation."
+keywords: ["golang", "go", "context", "middleware", "request-scoped values", "http middleware", "context package", "request cancellation"]
 ---
 Di artikel sebelumnya, saya menjelaskan tentang implementasi HTTP middleware di Go. Dalam praktiknya implementasi middleware juga sangat terkait dengan bagaimana kita menangani nilai yang kita hasilkan di middleware dapat di konsumsi oleh proses lain di aplikasi. Semisal saya ambil contoh implementasi secured endpoint yang hanya boleh diakses oleh user yang sudah login. Middleware yang bertugas untuk pengecekan user login juga perlu mengirim informasi user ke proses selanjutnya atau agar API boundaries yang lain bisa menerima informasi tersebut.
 

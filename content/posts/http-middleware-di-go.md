@@ -1,7 +1,9 @@
 ---
-title: "Http Middleware Di Go"
+title: "HTTP Middleware di Go"
 date: 2018-06-10T14:28:00+07:00
 draft: false
+description: "Panduan implementasi HTTP middleware di Go menggunakan standard library — cara membuat middleware yang do one thing well dan compose-able untuk logging, rate limiting, dan autentikasi."
+keywords: ["http middleware", "golang", "go", "logging", "compose middleware", "rate limiting", "authentication", "standard library", "net/http"]
 ---
 Dalam konteks pembuatan aplikasi web, kita sering dihadapkan oleh berbagai kasus yang sebenarnya tidak berhubungan langsung dengan masalah bisnis yang ingin diselesaikan. Semisal, ketika membuat web untuk menerima order barang, kita perlu melakukan berbagai tugas sebelum order barang tersebut dikerjakan. Contoh paling sederhana, pengecekan hak akses, yaitu pembuatan order hanya boleh dilakukan oleh pihak yang memiliki akses. Dalam menyelesaikan masalah tersebut, kita bisa menggunakan pola atau teknik http middleware.
 
