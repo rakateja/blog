@@ -1,0 +1,176 @@
+<!doctype html><html lang=en-us><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1"><title>Deploying Go App on Minikube Using Local Docker Image - Made Raka</title>
+<meta property="og:title" content="Deploying Go App on Minikube Using Local Docker Image - Made Raka"><meta name=twitter:title content="Deploying Go App on Minikube Using Local Docker Image - Made Raka"><meta name=description content='In this post I will guide you how to running local Docker Image on Minikube, a Virtual Machine which runs a single-node Kubernetes cluster locally. To go thru this post, I expect you already have Docker, kubectl and Minikube installed in local environment.
+Before starting into main topic, we need to create a small Go application first, it&rsquo;s just a server that is receiving HTTP requests.
+package main
+
+import (
+	"fmt"
+	"log"
+	"net/http"
+
+	"github.com/google/uuid"
+	"github.com/kelseyhightower/envconfig"
+)
+
+type Config struct {
+	Port int `envconfig:"PORT" default:"8080"`
+}
+
+func main() {
+	var conf Config
+	if err := envconfig.Process("KLAUS", &amp;conf); err != nil {
+		log.Fatalf("%v", err)
+	}
+	log.Println("[INFO] Starting klaus server ...")
+
+	http.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
+		id, err := uuid.NewUUID()
+		if err != nil {
+			fmt.Fprintf(w, err.Error())
+			return
+		}
+		log.Printf("[INFO] ReqID: %v", id.String())
+		fmt.Fprintf(w, "Hello Klaus!!")
+	})
+	log.Printf("[INFO] Listening on port :%d", conf.Port)
+	http.ListenAndServe(fmt.Sprintf(":%d", conf.Port), nil)
+}
+Let&rsquo;s test the application first, run following command to resolve external packages'><meta property="og:description" content='In this post I will guide you how to running local Docker Image on Minikube, a Virtual Machine which runs a single-node Kubernetes cluster locally. To go thru this post, I expect you already have Docker, kubectl and Minikube installed in local environment.
+Before starting into main topic, we need to create a small Go application first, it&rsquo;s just a server that is receiving HTTP requests.
+package main
+
+import (
+	"fmt"
+	"log"
+	"net/http"
+
+	"github.com/google/uuid"
+	"github.com/kelseyhightower/envconfig"
+)
+
+type Config struct {
+	Port int `envconfig:"PORT" default:"8080"`
+}
+
+func main() {
+	var conf Config
+	if err := envconfig.Process("KLAUS", &amp;conf); err != nil {
+		log.Fatalf("%v", err)
+	}
+	log.Println("[INFO] Starting klaus server ...")
+
+	http.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
+		id, err := uuid.NewUUID()
+		if err != nil {
+			fmt.Fprintf(w, err.Error())
+			return
+		}
+		log.Printf("[INFO] ReqID: %v", id.String())
+		fmt.Fprintf(w, "Hello Klaus!!")
+	})
+	log.Printf("[INFO] Listening on port :%d", conf.Port)
+	http.ListenAndServe(fmt.Sprintf(":%d", conf.Port), nil)
+}
+Let&rsquo;s test the application first, run following command to resolve external packages'><meta name=twitter:description content="In this post I will guide you how to running local Docker Image on Minikube, a Virtual Machine which runs a single-node Kubernetes cluster locally. To go thru this post, I expect you already have …"><meta name=author content><meta property="og:site_name" content="Made Raka"><meta property="og:url" content="http://example.org/posts/deploying-go-app-on-minikube-using-local-docker-image/"><meta property="og:type" content="article"><meta name=twitter:card content="summary"><meta name=generator content="Hugo 0.147.0"><link rel=stylesheet href=/css/style.css media=all><link rel=stylesheet href=/css/syntax.css media=all><link rel=stylesheet href=/css/custom.css media=all><script src=/js/script.js></script><script src=/js/custom.js></script><script defer src=/js/fontawesome.js></script></head><body><header class=site-header><nav class=site-navi><h1 class=site-title><a href=/>Made Raka</a></h1><ul class=site-navi-items><li class=site-navi-item-books><a href=/books/ title=Books>Books</a></li><li class=site-navi-item-about><a href=/about/ title=About>About</a></li></ul></nav></header><hr class=site-header-bottom><div class=main role=main><article class=article><h1 class=article-title>Deploying Go App on Minikube Using Local Docker Image</h1><hr class=article-title-bottom><ul class=article-meta><li class=article-meta-date><time>December 8, 2019</time></li></ul><p>In this post I will guide you how to running local Docker Image on Minikube, a Virtual Machine which runs a single-node Kubernetes cluster locally. To go thru this post, I expect you already have Docker, kubectl and Minikube installed in local environment.</p><p>Before starting into main topic, we need to create a small Go application first, it&rsquo;s just a server that is receiving HTTP requests.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-go data-lang=go><span style=display:flex><span><span style=color:#f92672>package</span> <span style=color:#a6e22e>main</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> (
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;fmt&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;log&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;net/http&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;github.com/google/uuid&#34;</span>
+</span></span><span style=display:flex><span>	<span style=color:#e6db74>&#34;github.com/kelseyhightower/envconfig&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>type</span> <span style=color:#a6e22e>Config</span> <span style=color:#66d9ef>struct</span> {
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>Port</span> <span style=color:#66d9ef>int</span> <span style=color:#e6db74>`envconfig:&#34;PORT&#34; default:&#34;8080&#34;`</span>
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>func</span> <span style=color:#a6e22e>main</span>() {
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>var</span> <span style=color:#a6e22e>conf</span> <span style=color:#a6e22e>Config</span>
+</span></span><span style=display:flex><span>	<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>envconfig</span>.<span style=color:#a6e22e>Process</span>(<span style=color:#e6db74>&#34;KLAUS&#34;</span>, <span style=color:#f92672>&amp;</span><span style=color:#a6e22e>conf</span>); <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>log</span>.<span style=color:#a6e22e>Fatalf</span>(<span style=color:#e6db74>&#34;%v&#34;</span>, <span style=color:#a6e22e>err</span>)
+</span></span><span style=display:flex><span>	}
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>log</span>.<span style=color:#a6e22e>Println</span>(<span style=color:#e6db74>&#34;[INFO] Starting klaus server ...&#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>http</span>.<span style=color:#a6e22e>HandleFunc</span>(<span style=color:#e6db74>&#34;/&#34;</span>, <span style=color:#66d9ef>func</span>(<span style=color:#a6e22e>w</span> <span style=color:#a6e22e>http</span>.<span style=color:#a6e22e>ResponseWriter</span>, <span style=color:#a6e22e>req</span> <span style=color:#f92672>*</span><span style=color:#a6e22e>http</span>.<span style=color:#a6e22e>Request</span>) {
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>id</span>, <span style=color:#a6e22e>err</span> <span style=color:#f92672>:=</span> <span style=color:#a6e22e>uuid</span>.<span style=color:#a6e22e>NewUUID</span>()
+</span></span><span style=display:flex><span>		<span style=color:#66d9ef>if</span> <span style=color:#a6e22e>err</span> <span style=color:#f92672>!=</span> <span style=color:#66d9ef>nil</span> {
+</span></span><span style=display:flex><span>			<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Fprintf</span>(<span style=color:#a6e22e>w</span>, <span style=color:#a6e22e>err</span>.<span style=color:#a6e22e>Error</span>())
+</span></span><span style=display:flex><span>			<span style=color:#66d9ef>return</span>
+</span></span><span style=display:flex><span>		}
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>log</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;[INFO] ReqID: %v&#34;</span>, <span style=color:#a6e22e>id</span>.<span style=color:#a6e22e>String</span>())
+</span></span><span style=display:flex><span>		<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Fprintf</span>(<span style=color:#a6e22e>w</span>, <span style=color:#e6db74>&#34;Hello Klaus!!&#34;</span>)
+</span></span><span style=display:flex><span>	})
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>log</span>.<span style=color:#a6e22e>Printf</span>(<span style=color:#e6db74>&#34;[INFO] Listening on port :%d&#34;</span>, <span style=color:#a6e22e>conf</span>.<span style=color:#a6e22e>Port</span>)
+</span></span><span style=display:flex><span>	<span style=color:#a6e22e>http</span>.<span style=color:#a6e22e>ListenAndServe</span>(<span style=color:#a6e22e>fmt</span>.<span style=color:#a6e22e>Sprintf</span>(<span style=color:#e6db74>&#34;:%d&#34;</span>, <span style=color:#a6e22e>conf</span>.<span style=color:#a6e22e>Port</span>), <span style=color:#66d9ef>nil</span>)
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>Let&rsquo;s test the application first, run following command to resolve external packages</p><pre tabindex=0><code>$ go get github.com/google/uuid
+$ go get github.com/kelseyhightower/envconfig
+</code></pre><p>Then we are ready to run the app using following command, it will receive HTTP requests, then respond a simple message to client.</p><pre tabindex=0><code>$ go run main.go
+</code></pre><p>Finally, test the app</p><pre tabindex=0><code>$ curl -XGET localhost:8080
+</code></pre><p>If you get a hello message, that means you have successfully created the Go app server. So that we are ready to go thru to the next step, which is dockerizing the app.</p><h2 id=dockerize-the-go-app>Dockerize the Go app</h2><p>To dockerize our Go app, I will use multi-stage Docker pattern to produce small Docker Image size.</p><p>Here is the Dockerfile that we use to dockerize the Go app.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-dockerfile data-lang=dockerfile><span style=display:flex><span><span style=color:#66d9ef>FROM</span><span style=color:#e6db74> golang:1-alpine AS builder</span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>WORKDIR</span><span style=color:#e6db74> /go/src/github.com/rakateja/klaus/hello-world</span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>RUN</span> apk add --update git<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>COPY</span> main.go .<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>RUN</span> go get github.com/google/uuid<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>RUN</span> go get github.com/kelseyhightower/envconfig<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>RUN</span> CGO_ENABLED<span style=color:#f92672>=</span><span style=color:#ae81ff>0</span> GOOS<span style=color:#f92672>=</span>linux GOARCH<span style=color:#f92672>=</span>amd64 go build -a -o app .<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>FROM</span><span style=color:#e6db74> alpine</span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>EXPOSE</span><span style=color:#e6db74> 8080</span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>COPY</span> --from<span style=color:#f92672>=</span>builder /go/src/github.com/rakateja/klaus/hello-world/app .<span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010>
+</span></span></span><span style=display:flex><span><span style=color:#960050;background-color:#1e0010></span><span style=color:#66d9ef>ENTRYPOINT</span> ./app<span style=color:#960050;background-color:#1e0010>
+</span></span></span></code></pre></div><p>To build Docker Image using Dockerfile above, we could execute following command.</p><pre tabindex=0><code>$ docker build --rm -t klaus-hello-world .
+</code></pre><p>You&rsquo;ll see a message something like this, if the Docker Image was successfully created.</p><pre tabindex=0><code>Successfully built 4028d9d649e6
+Successfully tagged klaus-hello-world:latest
+</code></pre><p>You also can use <code>docker images</code> command to see the result.</p><p><img src=/docker-images.png alt="docker images"></p><p>To run the Docker Image, you can use following command.</p><pre tabindex=0><code>$ docker run -e PORT=8080 -p 8080:8080 --name=klaus-hello-world klaus-hello-world
+</code></pre><p>Then test it again by sending HTTP request using curl</p><pre tabindex=0><code>$ curl localhost:8080
+</code></pre><h2 id=deploying-local-docker-image-on-minikube>Deploying Local Docker Image on Minikube</h2><p>In the previous section, we&rsquo;ve successfully created a Docker Image for Go app, then in this section we&rsquo;ll deploy it in Minikube, a local Kubernetes cluster that&rsquo;s running in local machine. Before go thru into this section, I expect you already have Minikube in your local machine, to test it you can use following command.</p><pre tabindex=0><code>$ minikube start
+</code></pre><p>The result should be something like this</p><pre tabindex=0><code>host: Running
+kubelet: Running
+apiserver: Running
+kubectl: Correctly Configured: pointing to minikube-vm at 192.168.99.100
+</code></pre><p>First thing we need to understand is, a minikube is a virtual machine that&rsquo;s already have Docker image installed. So that we can say its Docker engine is different with Docker engine that&rsquo;s already running on our local environment.</p><p>To proof that we can execute <code>docker images</code> command in local environment and in Minikube virtual machine, the result should be different. To execute the command inside Minikube virtual machine, you need ssh into Minikube first by running following command.</p><pre tabindex=0><code>$ minikube ssh
+</code></pre><p>Then the next step is pointing out local docker environment to Minikube by using following command. But first, we need to exit from Minikube virtual machine first, use <code>exit</code> command to do so.</p><pre tabindex=0><code>$ eval $(minikube docker-env)
+</code></pre><p>Execute <code>docker images</code> in Minikube and local environment, now the result should be same. Then the next step is building docker image for our Go app to Minikube&rsquo;s Docker engine, the command is still the same.</p><pre tabindex=0><code>$ docker build --rm -t klaus-hello-world .
+</code></pre><p>To check the result, you can ssh into Minikube first then execute <code>docker images</code>, the Docker Image <code>klaus-hello-world</code> should be appeared there.</p><p>Then the next step is to create a yaml file about Kubernetes Deployment. To make Minikube uses local Docker Image, we need to configure its Image Pull Policy, use <code>Never</code> for the configuration.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#f92672>apiVersion</span>: <span style=color:#ae81ff>apps/v1</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>kind</span>: <span style=color:#ae81ff>Deployment</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>metadata</span>:
+</span></span><span style=display:flex><span>  <span style=color:#f92672>labels</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>app.kubernetes.io/name</span>: <span style=color:#ae81ff>load-balancer-klaus-hello-world</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>name</span>: <span style=color:#ae81ff>klaus-hello-world</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>spec</span>:
+</span></span><span style=display:flex><span>  <span style=color:#f92672>replicas</span>: <span style=color:#ae81ff>5</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>selector</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>matchLabels</span>:
+</span></span><span style=display:flex><span>      <span style=color:#f92672>app.kubernetes.io/name</span>: <span style=color:#ae81ff>load-balancer-klaus-hello-world</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>template</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>metadata</span>:
+</span></span><span style=display:flex><span>      <span style=color:#f92672>labels</span>:
+</span></span><span style=display:flex><span>        <span style=color:#f92672>app.kubernetes.io/name</span>: <span style=color:#ae81ff>load-balancer-klaus-hello-world</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>spec</span>:
+</span></span><span style=display:flex><span>      <span style=color:#f92672>containers</span>:
+</span></span><span style=display:flex><span>      - <span style=color:#f92672>image</span>: <span style=color:#ae81ff>klaus-hello-world:latest</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>name</span>: <span style=color:#ae81ff>klaus-hello-world</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>imagePullPolicy</span>: <span style=color:#ae81ff>Never</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>ports</span>:
+</span></span><span style=display:flex><span>        - <span style=color:#f92672>containerPort</span>: <span style=color:#ae81ff>8080</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>env</span>:
+</span></span><span style=display:flex><span>        - <span style=color:#f92672>name</span>: <span style=color:#ae81ff>KLAUS_PORT</span>
+</span></span><span style=display:flex><span>          <span style=color:#f92672>value</span>: <span style=color:#e6db74>&#34;8080&#34;</span>
+</span></span></code></pre></div><p>To execute the file, we run following command.</p><pre tabindex=0><code>$ kubectl apply -f minikubeDeployment.yaml
+</code></pre><p>It will create Deployment object and associated with ReplicaSet object. The ReplicaSet object will has 5 pods, each object runs the application.</p><pre tabindex=0><code>$ kubectl get pods
+</code></pre><p>The output is similar to this.</p><p><img src=/get-pods.png alt="kubectl get pods"></p><p>Then you can use following command to check the Deployment</p><pre tabindex=0><code>$ kubectl get deployment klaus-hello-world
+</code></pre><p>Then the final step is creating Service object to expose the Deployment.</p><pre tabindex=0><code>$ kubectl expose deployment klaus-hello-world --type=LoadBalancer --name=klaus-hello-world-service
+</code></pre><p>To check the result, use following command</p><pre tabindex=0><code>$ kubectl get services klaus-hello-world-service
+</code></pre><p>The output is similar to this.</p><p><img src=/get-services.png alt="kubectl get services"></p><p>If EXTERNAL-IP is still pending, wait for couple of minute or execute <code>minikube tunnel</code> in different terminal. Then check the result by using the same command, if it&rsquo;s still not appeared, try again and again.</p><p>You can also can use following command to see detail information about the Service.</p><pre tabindex=0><code>$ kubectl describe services klaus-hello-world-service
+</code></pre><p>Then finally use the EXTERNAL-IP address to access the application.</p><pre tabindex=0><code>$ curl http://&lt;EXTERNAL-IP&gt;:&lt;PORT&gt;
+</code></pre><p>The response to successful request is a hello message:</p><pre tabindex=0><code>Hello Klaus!!
+</code></pre><p>Yay it means we&rsquo;ve successfully deployed Go application using local Docker Image on Minikube.</p><p>Thanks for reading and enjoy!</p><h2 id=references>References</h2><ul><li><a href=https://kubernetes.io/docs/tutorials/stateless-application/expose-external-ip-address/>https://kubernetes.io/docs/tutorials/stateless-application/expose-external-ip-address/</a></li></ul></article><ul class="pager article-pager"><li class=pager-newer><a href=/posts/separation-of-concerns/ data-toggle=tooltip data-placement=top title="Separation of Concerns through Layered Design">&lt; Newer</a></li><li class=pager-older><a href=/posts/dependency-injection-in-go/ data-toggle=tooltip data-placement=top title="Dependency Injection in Go">Older ></a></li></ul></div><div class=site-footer><div class=copyright>&copy; Copyright 2017 Made Raka</div><ul class=site-footer-items></ul><div class=powerdby>Powered by <a href=https://gohugo.io/>Hugo</a> and <a href=https://github.com/taikii/whiteplain>Whiteplain</a></div></div></body></html>
